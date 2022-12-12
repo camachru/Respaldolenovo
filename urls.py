@@ -1,24 +1,21 @@
-from django.urls import path
-from django.contrib.auth.decorators import login_required
-from . import views
+from django.conf import settings
+from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import path, include
 
-app_name = 'cart'
+from core import views
 
 
 
 urlpatterns = [
-    path('', views.CartView.as_view(), name='summary'),
-    path('shop/', views.ProductListView.as_view(), name='product-list'),
-    path('shop/<slug>/', views.ProductDetailView.as_view(), name='product-detail'),
-    path('increase-quantity/<pk>/', views.IncreaseQuantityView.as_view(), name='increase-quantity'),
-    path('decrease-quantity/<pk>/', views.DecreaseQuantityView.as_view(), name='decrease-quantity'),
-    path('remove-from-cart/<pk>/', views.RemoveFromCartView.as_view(), name='remove-from-cart'),
-    path('checkout1/', login_required(views.CheckoutView1.as_view()), name='checkout1'),   
-    path('payment/', views.PaymentView.as_view(), name='payment'),
-    path('thank-you/', views.ThankYouView.as_view(), name='thank-you'),
-    path('confirm-order/', views.ConfirmOrderView.as_view(), name='confirm-order'),
-    path('orders/<pk>/', views.OrderDetailView.as_view(), name='order-detail'),
-    
-    path('postal/', views.PostalView.as_view(), name='Postal-View'), 
-    path('pcod/<cpostal>/', login_required(views.CheckoutView2.as_view()), name='checkout3')  
-]       
+    path('admin/', admin.site.urls),
+    path('accounts/', include('allauth.urls')),
+    path('', views.HomeView.as_view(), name='home'),
+    path('contact/', views.ContactView.as_view(), name='contact'),
+    path('cart/', include('cart.urls', namespace='cart')),
+    path('profile/', views.ProfileView.as_view(), name='profile'),
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
