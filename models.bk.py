@@ -16,31 +16,6 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-class addresses(models.Model):
-    d_codigo = models.CharField(max_length=128)
-    d_asenta = models.CharField(max_length=128)
-    d_tipo_asenta = models.CharField(max_length=128)
-    d_mnpio = models.CharField(max_length=128)  # Field name made lowercase.
-    d_estado = models.CharField(max_length=128) 
-    d_ciudad = models.CharField(max_length=128, blank=True, null=True)
-    d_cp = models.CharField(max_length=128, blank=True, null=True)  # Field name made lowercase.
-    c_estado = models.CharField(max_length=128)
-    c_oficina = models.CharField(max_length=128)
-    c_cp = models.CharField(max_length=128, blank=True, null=True)  # Field name made lowercase.
-    c_tipo_asenta = models.CharField(max_length=128)
-    c_mnpio = models.CharField(max_length=128)
-    id_asenta_cpcons = models.CharField(max_length=128)
-    d_zona = models.CharField(max_length=128)
-    c_cve_ciudad = models.CharField(max_length=128, blank=True, null=True)
-    
-    
-    
-        
-
-    def __str__(self):
-        return f"{self.d_estado}, {self.d_asenta}, {self.d_codigo}, {self.d_mnpio}"
-
-
 class Address(models.Model):
     ADDRESS_CHOICES = (
         ('B', 'Billing'),
@@ -48,22 +23,22 @@ class Address(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    mnpiociu = models.ForeignKey(addresses,  on_delete=models.PROTECT)  
-    tipo_dom = models.CharField(max_length=100, blank=True, null=True)
-    calle = models.CharField(max_length=100, blank=True, null=True)
-    no_ext = models.CharField(max_length=50, blank=True, null=True)
-    no_int = models.CharField(max_length=50, blank=True, null=True)
-    telefono = models.CharField(max_length=100, blank=True, null=True)
+    # cpostalp = models.ForeignKey(DjangoPostalcodesMexicoPostalcode)
+    tipo_dom = models.CharField(max_length=100)
+    calle = models.CharField(max_length=100)
+    no_ext = models.CharField(max_length=50)
+    no_int = models.CharField(max_length=50)
+    telefono = models.CharField(max_length=100)
     Indicaciones = models.TextField(blank=True, null=True)
-    address_line_1 = models.CharField(max_length=150, blank=True, null=True)
+    address_line_1 = models.CharField(max_length=150)
+    address_line_2 = models.CharField(max_length=150)
+    city = models.CharField(max_length=100)
     zip_code = models.CharField(max_length=100)
     address_type = models.CharField(max_length=1, choices=ADDRESS_CHOICES)
     default = models.BooleanField(default=False)
     
-    
-    
     def __str__(self):
-        return f"{self.mnpiociu},  Calle  {self.calle}, No ext. {self.no_ext}, No int. {self.no_int}  "
+        return f"{self.address_line_1}, {self.address_line_2}, {self.city}, {self.zip_code} "
 
     class Meta:
         verbose_name_plural = 'Addresses'
@@ -168,6 +143,7 @@ class Order(models.Model):
     def get_total(self):
         total = self.get_raw_total()
         return "{:.2f}".format(total / 100)
+
 class Payment(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='payments')
     payment_method = models.CharField(max_length=20, choices=(
@@ -191,3 +167,22 @@ def pre_save_product_receiver(sender, instance, *args, **kwargs):
 
 pre_save.connect(pre_save_product_receiver, sender=Product)
 
+class DjangoPostalcodesMexicoPostalcode(models.Model):
+    created = models.DateTimeField()
+    modified = models.DateTimeField()
+    d_codigo = models.CharField(max_length=5)
+    d_asenta = models.CharField(max_length=128)
+    d_mnpio = models.CharField(db_column='D_mnpio', max_length=128)  # Field name made lowercase.
+    d_ciudad = models.CharField(max_length=128, blank=True, null=True)
+    c_estado = models.CharField(max_length=2)
+    c_oficina = models.CharField(max_length=5)
+    c_tipo_asenta = models.CharField(max_length=2)
+    c_mnpio = models.CharField(max_length=3)
+    id_asenta_cpcons = models.CharField(max_length=4)
+    d_zona = models.CharField(max_length=10)
+    c_cve_ciudad = models.CharField(max_length=2, blank=True, null=True)
+    d_cp = models.CharField(db_column='d_CP', max_length=128, blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'django_postalcodes_mexico_postalcode'
